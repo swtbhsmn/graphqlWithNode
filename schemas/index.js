@@ -1,18 +1,25 @@
 var { GraphQLObjectType, GraphQLString, GraphQLList } = require('graphql');
 var UserType = require('./typeDefs')
-var User     = require('../shares/users')
+var User = require('../shares/users')
 
 const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields: {
-        getAllUsers: {
+        getUsers: {
             type: new GraphQLList(UserType),
-            args: { id: { type: GraphQLString } },
+            args: { _id: { type: GraphQLString } },
             resolve(parent, args) {
-                return User;
-            },
+                return User.find({});
+            }
+        },
+        getUser: {
+            type: UserType,
+            args: { _id: { type: GraphQLString } },
+            resolve(parent, args) {
+                return User.findById(args._id);
+            }
         }
-    },
+    }
 });
 
 const Mutation = new GraphQLObjectType({
@@ -27,17 +34,54 @@ const Mutation = new GraphQLObjectType({
                 password: { type: GraphQLString },
             },
             resolve(parent, args) {
-                User.push({
-                    id: JSON.stringify(User.length + 1),
+                if (!args._id) return;
+               return User.create({
                     firstName: args.firstName,
                     lastName: args.lastName,
                     email: args.email,
                     password: args.password,
                 });
-                return args;
             },
         },
+        updateUser: {
+            type: UserType,
+            args: {
+                _id: { type: GraphQLString },
+                firstName: { type: GraphQLString },
+                lastName: { type: GraphQLString },
+                email: { type: GraphQLString },
+                password: { type: GraphQLString },
+            },
+            resolve(parent, args) {
+                if (!args._id) return;
+                return User.findOneAndUpdate(
+                    {
+                        _id: args._id
+                    },
+                    {
+                        $set: {
+                            firstName: args.firstName,
+                            lastName: args.lastName,
+                            email: args.email,
+                            password:args.password
+                        }
+                    },
+                    { new: true }
+                )
+            }
+        },
+        deletedUser: {
+            type: UserType,
+            args: {
+                _id: { type: GraphQLString }
+            },
+            resolve(parent, args) {
+                if (!args._id) return;
+                return User.findByIdAndDelete({ _id: args._id })
+
+            }
+        }
     },
 });
 
-module.exports={RootQuery,Mutation};
+module.exports = { RootQuery, Mutation };

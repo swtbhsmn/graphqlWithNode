@@ -1,4 +1,5 @@
-const User = [
+var User = require('../models')
+const _User = [
     {
       id: "0001",
       firstName: 'Swetabh',
@@ -21,5 +22,5 @@ const User = [
       password: "kjegdfuigadhebjhewbhdguhxsahjvdctdcbiixjxji"
     },
   ]
-  
+
 module.exports = User;
